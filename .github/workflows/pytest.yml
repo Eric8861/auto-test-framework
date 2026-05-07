@@ -1,0 +1,52 @@
+name: API Test CI/CD
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install allure-pytest
+
+      - name: Run tests
+        run: pytest tests/ --alluredir=allure-results
+        env:
+          # 通过 GitHub Secrets 注入敏感配置
+          ADMIN_BASE_URL: ${{ secrets.ADMIN_BASE_URL }}
+          PORTAL_BASE_URL: ${{ secrets.PORTAL_BASE_URL }}
+
+      - name: Generate Allure report
+        if: always()
+        run: allure generate allure-results -o allure-report --clean
+
+      - name: Upload Allure report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+          retention-days: 30
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+          retention-days: 7

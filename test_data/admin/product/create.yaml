@@ -1,0 +1,93 @@
+product_create:
+  normal_cases:
+    - name: "正常创建商品-最低配置"
+      description: "仅填写必填字段"
+      data:
+        name: null
+        price: 99.0
+        brandId: 49
+        productCategoryId: 7
+        stock: 100
+      expected:
+        code: 200
+
+    - name: "正常创建商品-完整配置"
+      description: "填写所有字段"
+      data:
+        name: null
+        price: 199.0
+        originalPrice: 299.0
+        brandId: 49
+        brandName: "七匹狼"
+        productCategoryId: 7
+        productCategoryName: "外套"
+        stock: 200
+        giftPoint: 10
+        giftGrowth: 20
+        keywords: "测试商品,自动化"
+        lowStock: 20
+        unit: "件"
+      expected:
+        code: 200
+
+    - name: "价格为零"
+      description: "商品价格可以为零"
+      data:
+        name: null
+        price: 0
+        brandId: 49
+        productCategoryId: 7
+        stock: 100
+      expected:
+        code: 200
+
+  error_cases:
+    - name: "缺少商品名称"
+      description: "商品名称为必填字段，后端应返回错误"
+      data:
+        price: 99.0
+        brandId: 49
+        productCategoryId: 7
+      expected:
+        code: 500  # 后端实际返回 500
+
+    - name: "价格为负数"
+      description: "价格不能为负数"
+      data:
+        name: null
+        price: -1
+        brandId: 49
+        productCategoryId: 7
+      expected:
+        code: 500  # 后端实际返回 500
+
+    - name: "品牌ID不存在"
+      description: "品牌ID必须存在"
+      data:
+        name: null
+        price: 99.0
+        brandId: 99999
+        productCategoryId: 7
+      expected:
+        code: 500
+
+  boundary_cases:
+    - name: "价格最大值"
+      description: "价格接近最大值边界"
+      data:
+        name: null
+        price: 9999999.99
+        brandId: 49
+        productCategoryId: 7
+      expected:
+        code: 200
+
+    - name: "价格为负数边界"
+      description: "价格为负数"
+      data:
+        name: null
+        price: -0.01
+        brandId: 49
+        productCategoryId: 7
+      expected:
+        code: 500

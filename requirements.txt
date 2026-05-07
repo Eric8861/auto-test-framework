@@ -1,0 +1,9 @@
+pytest>=7.4.0
+requests>=2.31.0
+pyyaml>=6.0
+allure-pytest>=2.13.0
+pytest-xdist>=3.5.0
+pytest-order>=1.1.0
+pytest-dependency>=0.5.1
+pytest-html>=4.1.0
+python-dotenv>=1.0.0

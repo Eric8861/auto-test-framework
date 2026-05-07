@@ -1,0 +1,76 @@
+product_list:
+  normal_cases:
+    - name: "查询全部商品"
+      description: "不带条件查询商品列表"
+      params:
+        page_num: 1
+        page_size: 10
+      expected:
+        code: 200
+        has_data: true
+
+    - name: "按关键词搜索"
+      description: "通过商品名称关键词搜索"
+      params:
+        keyword: "test"
+        page_num: 1
+        page_size: 10
+      expected:
+        code: 200
+
+    - name: "分页查询-第二页"
+      description: "分页获取第二页数据"
+      params:
+        page_num: 2
+        page_size: 5
+      expected:
+        code: 200
+
+    - name: "小分页"
+      description: "每页5条数据"
+      params:
+        page_num: 1
+        page_size: 5
+      expected:
+        code: 200
+
+    - name: "大分页"
+      description: "每页50条数据"
+      params:
+        page_num: 1
+        page_size: 50
+      expected:
+        code: 200
+
+  error_cases:
+    - name: "页码为零"
+      description: "页码从1开始"
+      params:
+        page_num: 0
+        page_size: 10
+      expected:
+        code: 200
+
+    - name: "页码为负数"
+      description: "页码不能为负数"
+      params:
+        page_num: -1
+        page_size: 10
+      expected:
+        code: 200
+
+    - name: "page_size为零"
+      description: "每页数量不能为零"
+      params:
+        page_num: 1
+        page_size: 0
+      expected:
+        code: 200
+
+    - name: "page_size超过限制"
+      description: "每页数量有上限"
+      params:
+        page_num: 1
+        page_size: 1000
+      expected:
+        code: 200

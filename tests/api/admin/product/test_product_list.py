@@ -19,6 +19,7 @@ class TestProductList:
     @allure.title("查询商品列表-正常场景")
     @pytest.mark.admin
     @pytest.mark.normal
+    @pytest.mark.smoke
     @pytest.mark.parametrize("case", product_list_data["normal_cases"])
     def test_list_normal(self, case):
         """正常场景测试"""

@@ -11,19 +11,21 @@ import subprocess
 import sys
 from pathlib import Path
 
-RESULTS_DIR = "D:/Code/codex/auto-test-framework/allure-results"
+RESULTS_DIR = "allure-results"
 
 
 def main():
     project_root = Path(__file__).parent.parent
 
-    if not any(Path(RESULTS_DIR).glob("*-result.json")):
+    results_path = project_root / RESULTS_DIR
+
+    if not any(results_path.glob("*-result.json")):
         print("allure-results 中没有测试数据，请先运行: pytest tests/")
         sys.exit(1)
 
     print("启动 Allure 报告服务...")
     result = subprocess.run(
-        f"allure serve {RESULTS_DIR}",
+        f"allure serve {results_path}",
         cwd=project_root,
         shell=True
     )

@@ -286,7 +286,15 @@ pytest tests/ -n auto
 
 # 生成 Allure 报告
 pytest tests/ --alluredir=allure-results
-allure serve allure-results
+python scripts/generate_report.py    # 自动启动 allure serve 并打开浏览器
+```
+
+### 3.4 查看 CI 测试报告
+
+GitHub Actions 完成后，在 run 页面底部 **Artifacts** 区域下载 `allure-results.zip`，解压后本地查看：
+
+```bash
+allure serve /path/to/allure-results
 ```
 
 ---
@@ -455,16 +463,34 @@ def teardown_method(self):
 
 ### CI/CD 集成
 
-```yaml
-# GitHub Actions
-- name: Run Tests
-  run: |
-    pip install -r requirements.txt
-    pytest tests/ --alluredir=allure-results
+GitHub Actions 配置（`.github/workflows/pytest.yml`）：
 
-- name: Upload Report
-  uses: actions/upload-artifact@v3
-  with:
-    name: allure-report
-    path: allure-results
+```yaml
+name: API Test CI/CD
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - run: pip install -r requirements.txt
+      - run: pytest tests/ -m smoke --alluredir=allure-results
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+          retention-days: 30
 ```
+
+CI 跑 smoke 冒烟测试（只含查询类接口），allure-results 作为 artifact 上传供下载。

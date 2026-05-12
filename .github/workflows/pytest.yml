@@ -22,16 +22,28 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run tests
-        run: pytest tests/ --alluredir=allure-results || true
-        env:
-          ADMIN_BASE_URL: ${{ secrets.ADMIN_BASE_URL }}
-          PORTAL_BASE_URL: ${{ secrets.PORTAL_BASE_URL }}
+      - name: Run smoke tests
+        run: pytest tests/ -m smoke --alluredir=allure-results
 
-      - name: Upload test results
+      - name: Upload Allure results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: allure-results
           retention-days: 30
+
+      - name: Publish Allure Report
+        uses: simple-elf/allure-report-action@master
+        with:
+          allure_results: allure-results
+          allure_history: allure-history
+          keep_reports: 30
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/master'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: allure-report
+          allow_empty_commit: true

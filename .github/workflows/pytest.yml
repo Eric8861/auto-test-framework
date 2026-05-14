@@ -41,6 +41,6 @@ jobs:
           else
             STATUS="❌ 失败"
           fi
-          curl -X POST https://open.feishu.cn/open-apis/bot/v2/hook/${{ secrets.LARK_WEBHOOK_SECRET }} \
+          curl -X POST https://open.larksuite.com/open-apis/bot/v2/hook/${{ secrets.LARK_WEBHOOK_SECRET }} \
             -H "Content-Type: application/json" \
             -d "{\"msg_type\":\"text\",\"content\":{\"text\":\"[自动化测试] $STATUS\n📋 仓库：${{ github.repository }}\n🔧 分支：${{ github.ref_name }}\n📝 提交：${{ github.sha }}\n🔗 详情：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}}"

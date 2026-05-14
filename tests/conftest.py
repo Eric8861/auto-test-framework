@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from core.api_client import ApiClient
 from core.context import TestContext
@@ -11,6 +13,13 @@ from api.portal.order import PortalOrderAPI
 
 
 config = Config()
+
+
+def pytest_configure(config):
+    """确保 allure-results 始终生成在项目根目录，不受 CWD 影响。"""
+    allure_dir = config.option.allure_report_dir
+    if allure_dir and not os.path.isabs(allure_dir):
+        config.option.allure_report_dir = os.path.join(str(config.rootdir), allure_dir)
 
 
 class AdminAPIGroup:

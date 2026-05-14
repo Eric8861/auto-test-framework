@@ -25,7 +25,7 @@ def main():
 
     print("启动 Allure 报告服务...")
     result = subprocess.run(
-        f"allure serve {results_path}",
+        f"allure serve --clean {results_path}",
         cwd=project_root,
         shell=True
     )

@@ -24,7 +24,7 @@ auto-test-framework/
 │   │   └── product/
 │   │       └── detail.yaml
 │   └── scenario/             # 业务流程测试数据
-│       └── product_lifecycle.json
+│       └── product_lifecycle.yaml
 │
 ├── core/                      # 核心模块
 │   ├── api_client.py        # HTTP 客户端封装
@@ -58,13 +58,16 @@ auto-test-framework/
 │   │   └── portal/
 │   │       └── product/
 │   │           └── test_product_detail.py
-│   └── scenario/           # 业务流程测试
-│       └── test_product_lifecycle.py
+│   ├── scenario/           # 业务流程测试
+│   │   ├── actions/        # 业务动作层
+│   │   │   └── product_actions.py
+│   │   └── test_product_lifecycle.py
 │
 ├── utils/                    # 工具类
 │   ├── logger.py           # 日志工具
 │   ├── random_data.py      # 随机数据生成
-│   └── encrypt.py         # 加密工具
+│   ├── encrypt.py          # 加密工具
+│   └── retry.py            # 重试装饰器
 │
 ├── scripts/                 # 辅助脚本
 │   ├── run_tests.py        # 测试运行脚本
@@ -132,11 +135,11 @@ class TestContext:
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  业务流程测试 (tests/scenario/test_product_lifecycle.py)         │
-│  ├── Context 存储 product_id                                    │
-│  ├── 后台创建商品 → 存储 ID                                     │
-│  ├── 前台查询商品 → 使用 ID                                     │
-│  └── teardown 清理测试数据                                      │
+│  业务流程测试 (tests/scenario/)                                 │
+│  ├── ProductActions 封装业务动作（创建/上下架/验证）            │
+│  ├── DataLoader 加载 test_data/scenario/ 测试数据              │
+│  ├── Context 跨步骤传递 product_id                              │
+│  └── cleanup 兜底清理测试数据                                   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -375,24 +378,71 @@ def test_create_normal(self, case):
 
 ### 5.2 业务流程测试
 
+通过 **业务动作层 (ProductActions)** 编排步骤，数据从 YAML 加载：
+
 ```python
-def test_lifecycle(self, admin_api, portal_api, test_context):
-    # 1. 后台创建商品
-    result = admin_api.product.create(name="测试商品", price=99.0)
-    product_id = result["data"]["id"]
+# tests/scenario/actions/product_actions.py
+class ProductActions:
+    def __init__(self, admin_api, portal_api, test_context):
+        self.admin = admin_api
+        self.portal = portal_api
+        self.ctx = test_context
+        self._created_ids = []
 
-    # 2. Context 存储 ID
-    test_context.set_product_id(product_id)
+    def create_product(self, data: dict) -> int:
+        """创建商品，返回 ID，自动记录以便 cleanup"""
+        self.admin.ensure_login()
+        result = self.admin.product.create(**data)
+        assert result["code"] == 200
+        pid = result["data"]["id"]
+        self._created_ids.append(pid)
+        return pid
 
-    # 3. 后台上架
-    admin_api.product.publish(product_id)
+    def publish_product(self, product_id: int) -> None:
+        self.admin.ensure_login()
+        assert self.admin.product.publish(product_id)["code"] == 200
 
-    # 4. 前台查询（自动使用 Context 中的 ID）
-    result = portal_api.product.detail()  # 无参时自动取 Context 中的 ID
-    assert result["code"] == 200
+    def verify_portal_status(self, pid, code, status) -> None:
+        self.portal.ensure_login()
+        result = self.portal.product.detail(pid)
+        assert result["code"] == code
+        assert result["data"]["publishStatus"] == status
 
-    # 5. teardown 清理
-    admin_api.product.delete(product_id)
+    def cleanup(self) -> None:
+        for pid in self._created_ids:
+            try: self.admin.product.delete(pid)
+            except: pass
+```
+
+```python
+# test_data/scenario/product_lifecycle.yaml
+lifecycle:
+  create_data:
+    price: 199.0
+    brandId: 49
+    productCategoryId: 7
+  expected:
+    portal_published:  {code: 200, publishStatus: 1}
+    portal_unpublished: {code: 200, publishStatus: 0}
+```
+
+```python
+# tests/scenario/test_product_lifecycle.py
+class TestProductLifecycle:
+    @pytest.fixture(autouse=True)
+    def setup(self, admin_api, portal_api, test_context):
+        self.actions = ProductActions(admin_api, portal_api, test_context)
+
+    def teardown_method(self):
+        self.actions.cleanup()
+
+    def test_lifecycle_complete(self):
+        data = scenario_data["lifecycle"]
+        pid = self.actions.create_product(data["create_data"])
+        self.actions.publish_product(pid)
+        self.actions.verify_portal_status(pid, 200, 1)
+        self.actions.unpublish_product(pid)
+        self.actions.verify_portal_status(pid, 200, 0)
 ```
 
 ---

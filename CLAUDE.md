@@ -18,7 +18,8 @@ core/            核心模块（api_client、context、data_loader）
 auth/            认证策略（Bearer Token、Cookie、API Key）
 api/             接口封装层（admin 后台、portal 前台）
 tests/           测试用例（api 单接口、scenario 业务流程）
-utils/           工具类（logger、random_data、encrypt）
+  scenario/actions  业务动作层（ProductActions）
+utils/           工具类（logger、random_data、encrypt、retry）
 scripts/         辅助脚本（run_tests、generate_report、lark_notify）
 ```
 
@@ -27,6 +28,8 @@ scripts/         辅助脚本（run_tests、generate_report、lark_notify）
 - ApiClient（core/api_client.py）：HTTP 客户端封装，支持认证策略切换
 - Config（config/config_loader.py）：单例配置，优先读环境变量再读 YAML
 - AdminAPIGroup / PortalAPIGroup：接口分组，在 conftest.py 注册
+- ProductActions（tests/scenario/actions/product_actions.py）：业务动作层，封装 create/publish/unpublish/verify 等可复用步骤
+- retry（utils/retry.py）：重试装饰器，网络波动时自动重试
 
 ## 敏感信息
 - config/accounts.yaml 已加入 .gitignore，不提交到 Git
@@ -36,6 +39,7 @@ scripts/         辅助脚本（run_tests、generate_report、lark_notify）
 ```bash
 pytest tests/                                    # 运行所有测试
 pytest tests/api/admin/product/                  # 运行指定模块
+pytest tests/scenario/                           # 运行业务流程测试
 pytest tests/ -m smoke                           # 冒烟测试
 pytest tests/ -n auto                            # 并行执行
 python scripts/generate_report.py                # 生成 Allure 报告

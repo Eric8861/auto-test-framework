@@ -1,0 +1,32 @@
+lifecycle:
+  create_data:
+    price: 199.0
+    brandId: 49
+    productCategoryId: 7
+    stock: 100
+  expected:
+    create_code: 200
+    portal_published:
+      code: 200
+      publishStatus: 1
+    portal_unpublished:
+      code: 200
+      publishStatus: 0
+
+unpublish_without_publish:
+  create_data:
+    price: 99.0
+    brandId: 49
+    productCategoryId: 7
+  expected:
+    create_code: 200
+    unpublish_code: 500
+
+delete_idempotent:
+  create_data:
+    price: 99.0
+    brandId: 49
+    productCategoryId: 7
+  expected:
+    first_delete: 200
+    second_delete: 200

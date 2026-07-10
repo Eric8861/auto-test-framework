@@ -1,7 +1,40 @@
+from copy import deepcopy
 from typing import Optional, Dict, List, Any
 from core.api_client import ApiClient
 from core.context import TestContext
 from utils.random_data import generate_unique_name
+
+
+DEFAULT_PRODUCT_TEMPLATE: Dict[str, Any] = {
+    "name": None,
+    "price": 99.0,
+    "brandId": 49,
+    "brandName": "测试品牌",
+    "productCategoryId": 7,
+    "productCategoryName": "外套",
+    "publishStatus": 0,
+    "stock": 100,
+    "deleteStatus": 0,
+    "description": "自动化测试商品",
+    "giftPoint": 1,
+    "giftGrowth": 2,
+    "keywords": "测试",
+    "lowStock": 10,
+    "newStatus": 0,
+    "originalPrice": 148.5,
+    "recommandStatus": 1,
+    "sale": 0,
+    "sort": 0,
+    "verifyStatus": 0,
+    "weight": 0,
+    "unit": "件",
+    "memberPriceList": [
+        {"memberLevelId": 1, "memberLevelName": "黄金会员"},
+        {"memberLevelId": 2, "memberLevelName": "白金会员"},
+    ],
+    "productFullReductionList": [{"fullPrice": 0, "reducePrice": 0}],
+    "productLadderList": [{"count": 0, "discount": 0, "price": 0}],
+}
 
 
 class AdminProductAPI:
@@ -13,46 +46,23 @@ class AdminProductAPI:
 
     def create(
         self,
-        name: str = None,
-        price: float = 99.0,
-        brand_id: int = 49,
-        category_id: int = 7,
-        stock: int = 100,
-        publish_status: int = 0,
+        payload: Dict[str, Any] = None,
         **kwargs
     ) -> Dict[str, Any]:
-        """创建商品"""
-        product_data = {
-            "name": name or generate_unique_name("TEST_PRODUCT"),
-            "price": price,
-            "brandId": brand_id,
-            "brandName": "测试品牌",
-            "productCategoryId": category_id,
-            "productCategoryName": "外套",
-            "publishStatus": publish_status,
-            "stock": stock,
-            "deleteStatus": 0,
-            "description": "自动化测试商品",
-            "giftPoint": 1,
-            "giftGrowth": 2,
-            "keywords": "测试",
-            "lowStock": 10,
-            "newStatus": 0,
-            "originalPrice": price * 1.5,
-            "recommandStatus": 1,
-            "sale": 0,
-            "sort": 0,
-            "verifyStatus": 0,
-            "weight": 0,
-            "unit": "件",
-            "memberPriceList": [
-                {"memberLevelId": 1, "memberLevelName": "黄金会员"},
-                {"memberLevelId": 2, "memberLevelName": "白金会员"},
-            ],
-            "productFullReductionList": [{"fullPrice": 0, "reducePrice": 0}],
-            "productLadderList": [{"count": 0, "discount": 0, "price": 0}],
-        }
-        product_data.update(kwargs)
+        """创建商品
+
+        双通道设计：
+        - payload: 传完整 dict（数据驱动/业务流），直接使用，仅自动补 name
+        - **kwargs: 传字段级覆盖（手动边界测试），与默认模板合并
+        """
+        if payload is not None:
+            product_data = deepcopy(payload)
+        else:
+            product_data = deepcopy(DEFAULT_PRODUCT_TEMPLATE)
+            product_data.update(kwargs)
+
+        if product_data.get("name") is None:
+            product_data["name"] = generate_unique_name("TEST_PRODUCT")
 
         resp = self.client.post("/product/create", json=product_data)
 
@@ -64,7 +74,6 @@ class AdminProductAPI:
                 self.context.set("product_name", product_data["name"])
             return result
 
-        # 返回原始响应以便测试用例判断
         try:
             return resp.json()
         except:

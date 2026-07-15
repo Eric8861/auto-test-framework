@@ -65,19 +65,12 @@ class AdminProductAPI:
             product_data["name"] = generate_unique_name("TEST_PRODUCT")
 
         resp = self.client.post("/product/create", json=product_data)
-
-        if resp.status_code == 200:
-            result = resp.json()
-            if result.get("code") == 200:
-                product_id = result["data"]["id"]
-                self.context.set_product_id(product_id)
-                self.context.set("product_name", product_data["name"])
-            return result
-
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        result = self.client.parse_response(resp)
+        if result.get("code") == 200:
+            product_id = result["data"]["id"]
+            self.context.set_product_id(product_id)
+            self.context.set("product_name", product_data["name"])
+        return result
 
     def list(
         self,
@@ -91,23 +84,13 @@ class AdminProductAPI:
             params["keyword"] = keyword
 
         resp = self.client.get("/product/list", params=params)
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)
 
     def detail(self, product_id: int = None) -> Dict[str, Any]:
         """查询商品详情"""
         product_id = product_id or self.context.get_product_id()
         resp = self.client.get(f"/product/{product_id}")
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)
 
     def publish(self, product_id: int = None) -> Dict[str, Any]:
         """上架商品"""
@@ -116,12 +99,7 @@ class AdminProductAPI:
             "ids": [product_id],
             "publishStatus": 1
         })
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)
 
     def unpublish(self, product_id: int = None) -> Dict[str, Any]:
         """下架商品"""
@@ -130,23 +108,13 @@ class AdminProductAPI:
             "ids": [product_id],
             "publishStatus": 0
         })
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)
 
     def delete(self, product_id: int = None) -> Dict[str, Any]:
         """删除商品"""
         product_id = product_id or self.context.get_product_id()
         resp = self.client.post("/product/delete", json={"ids": [product_id]})
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)
 
     def update(
         self,
@@ -158,9 +126,4 @@ class AdminProductAPI:
         data = {"id": product_id}
         data.update(kwargs)
         resp = self.client.post("/product/update", json=data)
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)

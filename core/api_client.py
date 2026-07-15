@@ -73,6 +73,15 @@ class ApiClient:
         """关闭 session"""
         self.session.close()
 
+    @staticmethod
+    def parse_response(resp: requests.Response) -> dict:
+        if resp.status_code == 200:
+            return resp.json()
+        try:
+            return resp.json()
+        except Exception:
+            return {"code": resp.status_code, "message": resp.text}
+
     def __enter__(self):
         return self
 

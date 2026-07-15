@@ -26,23 +26,13 @@ class AdminOrderAPI:
             params["orderSn"] = order_sn
 
         resp = self.client.get("/order/list", params=params)
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)
 
     def detail(self, order_id: int = None) -> Dict[str, Any]:
         """查询订单详情"""
         order_id = order_id or self.context.get_order_id()
         resp = self.client.get(f"/order/{order_id}")
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)
 
     def deliver(
         self,
@@ -58,12 +48,7 @@ class AdminOrderAPI:
             "deliverySn": delivery_sn or f"SF{int(time.time())}"
         }
         resp = self.client.post("/order/update/delivery", json=data)
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)
 
     def close(self, order_id: int = None, note: str = None) -> Dict[str, Any]:
         """关闭订单"""
@@ -72,9 +57,4 @@ class AdminOrderAPI:
         if note:
             data["note"] = note
         resp = self.client.post("/order/update/close", json=data)
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)

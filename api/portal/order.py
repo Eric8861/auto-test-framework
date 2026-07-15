@@ -19,23 +19,13 @@ class PortalOrderAPI:
         """查询订单列表"""
         params = {"status": status, "pageNum": page, "pageSize": page_size}
         resp = self.client.get("/order/list", params=params)
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)
 
     def detail(self, order_id: int = None) -> Dict[str, Any]:
         """查询订单详情"""
         order_id = order_id or self.context.get_order_id()
         resp = self.client.get(f"/order/{order_id}")
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)
 
     def cancel(self, order_id: int = None, reason: str = None) -> Dict[str, Any]:
         """取消订单"""
@@ -44,9 +34,4 @@ class PortalOrderAPI:
         if reason:
             data["reason"] = reason
         resp = self.client.post("/order/cancel", json=data)
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)

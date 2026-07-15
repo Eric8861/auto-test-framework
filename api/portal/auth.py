@@ -39,6 +39,7 @@ class PortalAuthAPI:
     def logout(self) -> dict:
         """登出"""
         resp = self.client.post("/sso/logout")
+        result = self.client.parse_response(resp)
         if resp.status_code == 200:
             self.context.portal_token = None
-        return resp.json()
+        return result

@@ -14,12 +14,7 @@ class PortalProductAPI:
         """查询商品详情"""
         product_id = product_id or self.context.get_product_id()
         resp = self.client.get(f"/product/detail/{product_id}")
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text, "status": resp.status_code}
+        return self.client.parse_response(resp)
 
     def search(
         self,
@@ -36,12 +31,7 @@ class PortalProductAPI:
             params["categoryId"] = category_id
 
         resp = self.client.get("/product/search", params=params)
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)
 
     def list(
         self,
@@ -55,19 +45,9 @@ class PortalProductAPI:
             params["sort"] = sort
 
         resp = self.client.get("/product/list", params=params)
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)
 
     def recommend(self, limit: int = 10) -> Dict[str, Any]:
         """推荐商品"""
         resp = self.client.get("/product/recommend", params={"limit": limit})
-        if resp.status_code == 200:
-            return resp.json()
-        try:
-            return resp.json()
-        except:
-            return {"code": resp.status_code, "message": resp.text}
+        return self.client.parse_response(resp)

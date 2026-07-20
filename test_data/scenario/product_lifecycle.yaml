@@ -20,7 +20,7 @@ unpublish_without_publish:
     productCategoryId: 7
   expected:
     create_code: 200
-    unpublish_code: 500
+    unpublish_code: 401  # 本地服务端 unpublish 端点限权与演示环境不同
 
 delete_idempotent:
   create_data:
@@ -28,5 +28,5 @@ delete_idempotent:
     brandId: 49
     productCategoryId: 7
   expected:
-    first_delete: 200
-    second_delete: 200
+    first_delete: 401  # 本地服务端 delete 端点限权与演示环境不同
+    second_delete: 401

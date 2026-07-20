@@ -22,7 +22,7 @@ class AdminAuthAPI:
             "/admin/login",
             json={"username": username, "password": password}
         )
-
+        print(resp.json())
         if resp.status_code == 200:
             data = resp.json()
             if data.get("code") == 200:

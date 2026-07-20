@@ -1,3 +1,4 @@
+import json as _json
 from typing import Optional, Dict, Any, Union
 import requests
 from core.context import TestContext
@@ -47,6 +48,19 @@ class ApiClient:
             headers=default_headers,
             **kwargs
         )
+        print("===== 请求入参(可直接粘贴到 Postman) =====")
+        print(f"method: {method}")
+        print(f"full url: {url}")
+        if params:
+            print(f"params:\n{_json.dumps(params, indent=2, ensure_ascii=False)}")
+        if json:
+            print(f"Body(raw/JSON):\n{_json.dumps(json, indent=2, ensure_ascii=False)}")
+        if data and isinstance(data, str):
+            print(f"data: {data}")
+        elif data:
+            print(f"data:\n{_json.dumps(data, indent=2, ensure_ascii=False)}")
+        print(f"headers: {_json.dumps(default_headers, indent=2, ensure_ascii=False)}")
+        print(f"实际发送headers: {dict(response.request.headers)}")
         return response
 
     def get(self, path: str, **kwargs) -> requests.Response:

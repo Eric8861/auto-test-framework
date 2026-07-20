@@ -16,7 +16,7 @@ class ProductActions:
             self.admin.ensure_login()
             result = self.admin.product.create(**data)
             assert result["code"] == 200, f"创建商品失败: {result}"
-            pid = result["data"]["id"]
+            pid = result["data"] if isinstance(result["data"], int) else result["data"]["id"]
             self._created_ids.append(pid)
             self.ctx.set_product_id(pid)
             allure.attach(str(pid), "商品ID")

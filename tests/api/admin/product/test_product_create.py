@@ -32,8 +32,8 @@ class TestProductCreate:
                 assert case["expected"]["message"] in result.get("message", "")
 
         # 清理：删除测试创建的商品
-        if result["code"] == 200 and result["data"].get("id"):
-            product_id = result["data"]["id"]
+        if result["code"] == 200:
+            product_id = result["data"] if isinstance(result["data"], int) else result["data"].get("id")
             self.admin_api.product.delete(product_id)
 
     @allure.title("异常场景-创建商品")
@@ -60,6 +60,7 @@ class TestProductCreate:
             assert result["code"] == case["expected"]["code"], f"响应: {result}"
 
         # 清理
-        if result["code"] == 200 and result["data"].get("id"):
-            product_id = result["data"]["id"]
-            self.admin_api.product.delete(product_id)
+        if result["code"] == 200:
+            product_id = result["data"] if isinstance(result["data"], int) else result["data"].get("id")
+            if product_id:
+                self.admin_api.product.delete(product_id)

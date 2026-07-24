@@ -3,6 +3,7 @@ from typing import Optional, Dict, Any, Union
 import requests
 from core.context import TestContext
 from auth.base import AuthStrategy
+from utils.allure_logger import log_request_response
 
 
 class ApiClient:
@@ -48,19 +49,20 @@ class ApiClient:
             headers=default_headers,
             **kwargs
         )
-        print("===== 请求入参(可直接粘贴到 Postman) =====")
-        print(f"method: {method}")
-        print(f"full url: {url}")
-        if params:
-            print(f"params:\n{_json.dumps(params, indent=2, ensure_ascii=False)}")
-        if json:
-            print(f"Body(raw/JSON):\n{_json.dumps(json, indent=2, ensure_ascii=False)}")
-        if data and isinstance(data, str):
-            print(f"data: {data}")
-        elif data:
-            print(f"data:\n{_json.dumps(data, indent=2, ensure_ascii=False)}")
-        print(f"headers: {_json.dumps(default_headers, indent=2, ensure_ascii=False)}")
-        print(f"实际发送headers: {dict(response.request.headers)}")
+
+        # 双通道日志: 控制台 + Allure
+        log_request_response(
+            method=method,
+            url=url,
+            request_headers=dict(response.request.headers),
+            request_params=params,
+            request_body=json or data,
+            response_status=response.status_code,
+            response_headers=dict(response.headers),
+            response_body=self.parse_response(response),
+            name=f"{method} {path}"
+        )
+
         return response
 
     def get(self, path: str, **kwargs) -> requests.Response:

@@ -30,6 +30,7 @@ scripts/         辅助脚本（run_tests、generate_report、lark_notify）
 - AdminAPIGroup / PortalAPIGroup：接口分组，在 conftest.py 注册
 - ProductActions（tests/scenario/actions/product_actions.py）：业务动作层，封装 create/publish/unpublish/verify 等可复用步骤
 - retry（utils/retry.py）：重试装饰器，网络波动时自动重试
+- AllureLogger（utils/allure_logger.py）：请求/响应双通道日志，控制台输出 curl 格式 + Allure JSON 附件
 
 ## 敏感信息
 - config/accounts.yaml 已加入 .gitignore，不提交到 Git
@@ -43,6 +44,11 @@ pytest tests/scenario/                           # 运行业务流程测试
 pytest tests/ -m smoke                           # 冒烟测试
 pytest tests/ -n auto                            # 并行执行
 python scripts/generate_report.py                # 生成 Allure 报告
+
+# 日志控制
+ENABLE_CONSOLE_LOG=false pytest tests/           # 关闭控制台日志
+ENABLE_ALLURE_LOG=false pytest tests/            # 关闭 Allure 日志
+ENABLE_REDACT_LOG=false pytest tests/            # 关闭脱敏（curl 包含真实 token）
 ```
 
 ## CI/CD

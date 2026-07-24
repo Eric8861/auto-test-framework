@@ -110,6 +110,21 @@ class Config:
         return self.get("allure.report_dir", "allure-report")
 
     @property
+    def enable_console_log(self) -> bool:
+        """是否启用控制台请求日志"""
+        return self.get("log.enable_console", True)
+
+    @property
+    def enable_allure_log(self) -> bool:
+        """是否启用 Allure 请求日志"""
+        return self.get("log.enable_allure", True)
+
+    @property
+    def enable_redact_log(self) -> bool:
+        """是否启用日志脱敏（关闭后 curl 命令包含真实 token）"""
+        return self.get("log.enable_redact", True)
+
+    @property
     def lark_webhook(self) -> str:
         return self.get("lark.webhook", "")
 
